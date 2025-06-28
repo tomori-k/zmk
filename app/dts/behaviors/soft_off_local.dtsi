@@ -1,0 +1,21 @@
+/*
+ * Copyright (c) 2025 The ZMK Contributors
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+#include <dt-bindings/zmk/behaviors.h>
+
+/ {
+    behaviors {
+#if ZMK_BEHAVIOR_OMIT(SOFT_OFF_LOCAL)
+        /omit-if-no-ref/
+#endif
+        // The name of the node must be at most 8 characters long
+        // because the locality of this behavior is LOCALITY_EVENT_SOURCE (See docs)
+        softoff_local: z_sol {
+            compatible = "zmk,behavior-soft-off-local";
+            #binding-cells = <0>;
+        };
+    };
+};
