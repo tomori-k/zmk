@@ -13,3 +13,7 @@ properties:
     required: true
   mods:
     type: int
+  auto-activate-upper-count:
+    type: int
+    description: Number of consecutive uppercase alphabetic presses to auto-activate caps word
+    default: 0

@@ -53,6 +53,18 @@ In addition, if you would like _multiple_ modifiers, instead of just `MOD_LSFT`,
 };
 ```
 
+### Auto activate with uppercase streak
+
+You can enable an automatic activation of caps word after typing a streak of uppercase alphabetic keys. Set `auto-activate-upper-count` to the number of consecutive uppercase key presses required. A value of `0` keeps the feature disabled (default).
+
+```dts
+&caps_word {
+    auto-activate-upper-count = <3>;
+};
+```
+
+Only alphabetic keycodes (`A` to `Z`) are counted, and the press must include either left or right shift (implicit or explicit). Any non-uppercase alphabetic press resets the counter.
+
 ### Multiple Caps Breaks
 
 If you want to use multiple caps breaks with different codes to break the caps, you can add additional caps words instances to use in your keymap:

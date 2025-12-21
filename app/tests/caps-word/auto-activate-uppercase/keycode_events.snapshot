@@ -1,0 +1,23 @@
+pressed: usage_page 0x07 keycode 0xE1 implicit_mods 0x00 explicit_mods 0x00
+press: Modifiers set to 0x02
+pressed: usage_page 0x07 keycode 0x04 implicit_mods 0x00 explicit_mods 0x00
+press: Modifiers set to 0x02
+released: usage_page 0x07 keycode 0x04 implicit_mods 0x00 explicit_mods 0x00
+release: Modifiers set to 0x02
+pressed: usage_page 0x07 keycode 0x05 implicit_mods 0x00 explicit_mods 0x00
+press: Modifiers set to 0x02
+released: usage_page 0x07 keycode 0x05 implicit_mods 0x00 explicit_mods 0x00
+release: Modifiers set to 0x02
+auto_activate: Activating caps word after 3 uppercase presses
+enhance_usage: Enhancing usage 0x06 with modifiers: 0x02
+pressed: usage_page 0x07 keycode 0x06 implicit_mods 0x02 explicit_mods 0x00
+press: Modifiers set to 0x02
+released: usage_page 0x07 keycode 0x06 implicit_mods 0x00 explicit_mods 0x00
+release: Modifiers set to 0x02
+released: usage_page 0x07 keycode 0xE1 implicit_mods 0x00 explicit_mods 0x00
+release: Modifiers set to 0x00
+enhance_usage: Enhancing usage 0x07 with modifiers: 0x02
+pressed: usage_page 0x07 keycode 0x07 implicit_mods 0x02 explicit_mods 0x00
+press: Modifiers set to 0x02
+released: usage_page 0x07 keycode 0x07 implicit_mods 0x00 explicit_mods 0x00
+release: Modifiers set to 0x00

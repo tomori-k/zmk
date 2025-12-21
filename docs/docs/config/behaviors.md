@@ -42,6 +42,7 @@ Applies to: `compatible = "zmk,behavior-caps-word"`
 | `#binding-cells` | int   | Must be `<0>`                                                                        |                                 |
 | `continue-list`  | array | List of [keycodes](/docs/keymaps/list-of-keycodes) which do not deactivate caps lock | `<UNDERSCORE BACKSPACE DELETE>` |
 | `mods`           | int   | A bit field of modifiers to apply                                                    | `<MOD_LSFT>`                    |
+| `auto-activate-upper-count` | int | Number of consecutive uppercase alphabetic presses required to auto-activate caps word | `0` (disabled) |
 
 `continue-list` is treated as if it always includes alphanumeric characters (A-Z, 0-9).
 

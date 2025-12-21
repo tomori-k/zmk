@@ -10,6 +10,7 @@
 #include <drivers/behavior.h>
 #include <zephyr/logging/log.h>
 #include <zmk/behavior.h>
+#include <dt-bindings/zmk/modifiers.h>
 
 #include <zmk/endpoints.h>
 #include <zmk/event_manager.h>
@@ -32,24 +33,32 @@ struct caps_word_continue_item {
 
 struct behavior_caps_word_config {
     zmk_mod_flags_t mods;
+    uint8_t auto_activate_upper_count;
     uint8_t continuations_count;
     struct caps_word_continue_item continuations[];
 };
 
 struct behavior_caps_word_data {
     bool active;
+    uint8_t upper_press_count;
 };
+
+static void reset_auto_upper_count(struct behavior_caps_word_data *data) {
+    data->upper_press_count = 0;
+}
 
 static void activate_caps_word(const struct device *dev) {
     struct behavior_caps_word_data *data = dev->data;
 
     data->active = true;
+    reset_auto_upper_count(data);
 }
 
 static void deactivate_caps_word(const struct device *dev) {
     struct behavior_caps_word_data *data = dev->data;
 
     data->active = false;
+    reset_auto_upper_count(data);
 }
 
 static int on_caps_word_binding_pressed(struct zmk_behavior_binding *binding,
@@ -117,6 +126,53 @@ static bool caps_word_is_numeric(uint8_t usage_id) {
             usage_id <= HID_USAGE_KEY_KEYBOARD_0_AND_RIGHT_PARENTHESIS);
 }
 
+#define CAPS_WORD_SHIFT_MODS (MOD_LSFT | MOD_RSFT)
+
+static bool caps_word_is_upper_alpha(struct zmk_keycode_state_changed *ev) {
+    if (ev->usage_page != HID_USAGE_KEY || !caps_word_is_alpha(ev->keycode)) {
+        return false;
+    }
+
+    uint8_t mods = ev->implicit_modifiers | ev->explicit_modifiers | zmk_hid_get_explicit_mods();
+
+    return (mods & CAPS_WORD_SHIFT_MODS) != 0;
+}
+
+static void caps_word_maybe_activate(const struct device *dev,
+                                     const struct behavior_caps_word_config *config,
+                                     struct behavior_caps_word_data *data,
+                                     struct zmk_keycode_state_changed *ev) {
+    if (config->auto_activate_upper_count == 0) {
+        return;
+    }
+
+    if (ev->usage_page != HID_USAGE_KEY || !caps_word_is_alpha(ev->keycode)) {
+        return;
+    }
+
+    bool upper = caps_word_is_upper_alpha(ev);
+
+    if (!upper) {
+        if (ev->state) {
+            reset_auto_upper_count(data);
+        }
+        return;
+    }
+
+    if (!ev->state) {
+        return;
+    }
+
+    data->upper_press_count++;
+
+    if (data->upper_press_count < config->auto_activate_upper_count) {
+        return;
+    }
+
+    LOG_DBG("Activating caps word after %d uppercase presses", config->auto_activate_upper_count);
+    activate_caps_word(dev);
+}
+
 static void caps_word_enhance_usage(const struct behavior_caps_word_config *config,
                                     struct zmk_keycode_state_changed *ev) {
     if (ev->usage_page != HID_USAGE_KEY || !caps_word_is_alpha(ev->keycode)) {
@@ -137,11 +193,15 @@ static int caps_word_keycode_state_changed_listener(const zmk_event_t *eh) {
         const struct device *dev = devs[i];
 
         struct behavior_caps_word_data *data = dev->data;
-        if (!data->active) {
-            continue;
-        }
-
         const struct behavior_caps_word_config *config = dev->config;
+
+        if (!data->active) {
+            caps_word_maybe_activate(dev, config, data, ev);
+
+            if (!data->active) {
+                continue;
+            }
+        }
 
         caps_word_enhance_usage(config, ev);
 
@@ -165,9 +225,12 @@ static int caps_word_keycode_state_changed_listener(const zmk_event_t *eh) {
 #define BREAK_ITEM(i, n) PARSE_BREAK(DT_INST_PROP_BY_IDX(n, continue_list, i))
 
 #define KP_INST(n)                                                                                 \
-    static struct behavior_caps_word_data behavior_caps_word_data_##n = {.active = false};         \
+    static struct behavior_caps_word_data behavior_caps_word_data_##n = {.active = false,          \
+                                                                          .upper_press_count = 0}; \
     static const struct behavior_caps_word_config behavior_caps_word_config_##n = {                \
         .mods = DT_INST_PROP_OR(n, mods, MOD_LSFT),                                                \
+        .auto_activate_upper_count =                                                               \
+            DT_INST_PROP_OR(n, auto_activate_upper_count, 0),                                      \
         .continuations = {LISTIFY(DT_INST_PROP_LEN(n, continue_list), BREAK_ITEM, (, ), n)},       \
         .continuations_count = DT_INST_PROP_LEN(n, continue_list),                                 \
     };                                                                                             \
